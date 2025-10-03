@@ -1,14 +1,17 @@
 package com.lauren.lucided.model;
 
-
-
-import lombok.Data;
 import jakarta.persistence.*;
+import lombok.Data;
 import java.util.List;
 
 @Data
 @Entity
+@Table(name = "students")
 public class Student extends AppUser {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToMany
     @JoinTable(
@@ -26,6 +29,7 @@ public class Student extends AppUser {
     private Parent parent;
 
     @ManyToOne
+    @JoinColumn(name = "educator_id")
     private Educator educator;
 
     @OneToMany(mappedBy = "student")

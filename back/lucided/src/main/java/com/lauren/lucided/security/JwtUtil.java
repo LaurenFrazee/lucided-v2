@@ -9,7 +9,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String jwtSecret = "lucided-secret-key"; // move to env in production
+    private final String jwtSecret = "lucided5secret4key44885544844bG9naWNhbGx5U2FmZVNlY3JldEtleTElucided5secret4key44885544844bG9naWNhbGx5U2FmZVNlY3JldEtleTE"; // move to env in production
     private final long jwtExpirationMs = 86400000; // 1 day
 
     // ✅ Option 1: Generate token from Authentication object
