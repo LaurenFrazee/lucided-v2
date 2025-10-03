@@ -1,44 +1,60 @@
 package com.lauren.lucided.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long expiration = 1000 * 60 * 60; // 1 hour
+    private final String jwtSecret = "lucided-secret-key"; // move to env in production
+    private final long jwtExpirationMs = 86400000; // 1 day
 
-    public String generateToken(String username, String role) {
+    // ✅ Option 1: Generate token from Authentication object
+    public String generateToken(Authentication auth) {
+        String email = auth.getName();
+        String role = auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+        return generateToken(email, role);
+    }
+
+    // ✅ Option 2: Generate token from email + role directly
+    public String generateToken(String email, String role) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .claim("role", role)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(key)
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token).getBody().getSubject();
-    }
-
-    public String extractRole(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token).getBody().get("role", String.class);
-    }
-
+    // ✅ Validate token
     public boolean isTokenValid(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    // ✅ Extract username (email)
+    public String extractUsername(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    // ✅ Extract role
+    public String extractRole(String token) {
+        return getClaims(token).get("role", String.class);
+    }
+
+    // ✅ Internal helper
+    private Claims getClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
