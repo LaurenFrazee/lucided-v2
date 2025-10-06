@@ -47,6 +47,13 @@ public class AuthService {
                 student.setRole(request.getRole());
                 studentRepo.save(student);
                 user = student;
+                System.out.println("RegisterRequest received:");
+                System.out.println("Full Name: " + request.getFullName());
+                System.out.println("Email: " + request.getEmail());
+                System.out.println("Password: " + request.getPassword());
+                System.out.println("Role: " + request.getRole());
+
+
             }
             case EDUCATOR -> {
                 Educator educator = new Educator();

@@ -1,5 +1,6 @@
 package com.lauren.lucided.controller;
 
+import com.lauren.lucided.dto.RegisterRequest;
 import com.lauren.lucided.dto.StudentDTO;
 import com.lauren.lucided.model.*;
 import com.lauren.lucided.security.AuthRequest;
@@ -65,9 +66,35 @@ public class AuthController {
         String token = jwtUtil.generateToken(auth);
         return ResponseEntity.ok(new AuthResponse(token));
     }
+    @PostMapping("/register/basic")
+    public ResponseEntity<AuthResponse> basicRegister(@RequestBody RegisterRequest request) {
+        if (request.getEmail() == null || request.getPassword() == null || request.getFullName() == null) {
+            return ResponseEntity.badRequest().body(new AuthResponse("Missing required fields"));
+        }
+
+        if (studentRepository.findByEmail(request.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(new AuthResponse("Email already in use"));
+        }
+
+        Student student = new Student();
+        student.setFullName(request.getFullName());
+        student.setEmail(request.getEmail());
+        student.setPassword(passwordEncoder.encode(request.getPassword()));
+        student.setRole(AppUser.Role.STUDENT);
+
+        Student saved = studentRepository.save(student);
+        String token = jwtUtil.generateToken(saved.getEmail(), saved.getRole().name());
+
+        return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody StudentDTO dto) {
+        System.out.println("🔔 Controller hit: /api/auth/register");
+
+
         if (dto.getCourseIds() == null || dto.getCourseIds().isEmpty()) {
             return ResponseEntity.badRequest().body(new AuthResponse("Course IDs must not be null or empty"));
         }
@@ -84,8 +111,12 @@ public class AuthController {
         student.setPassword(passwordEncoder.encode(dto.getPassword()));
         student.setRole(Student.Role.STUDENT);
 
+
+
         Student saved = studentRepository.save(student);
         String token = jwtUtil.generateToken(saved.getEmail(), saved.getRole().name());
+
+
 
         return ResponseEntity.ok(new AuthResponse(token));
     }
