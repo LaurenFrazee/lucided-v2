@@ -11,6 +11,7 @@ import com.lauren.lucided.repository.ParentRepository;
 import com.lauren.lucided.repository.EducatorRepository;
 import com.lauren.lucided.service.StudentService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,9 @@ import java.util.List;
 public class StudentController {
 
     private final StudentService studentService;
+    @Autowired
     private final StudentMapper studentMapper;
+
     private final CourseRepository courseRepository;
     private final ParentRepository parentRepository;
     private final EducatorRepository educatorRepository;

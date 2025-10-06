@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 @MappedSuperclass
 public abstract class AppUser {
 
+
+
     @Column(nullable = false)
     private String fullName;
 

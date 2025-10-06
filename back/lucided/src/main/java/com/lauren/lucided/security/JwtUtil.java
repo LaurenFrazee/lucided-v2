@@ -21,13 +21,16 @@ public class JwtUtil {
 
     // ✅ Option 2: Generate token from email + role directly
     public String generateToken(String email, String role) {
-        return Jwts.builder()
+        System.out.println();
+        return
+                Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
+
     }
 
     // ✅ Validate token

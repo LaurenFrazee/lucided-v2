@@ -4,10 +4,12 @@ import com.lauren.lucided.model.AppUser;
 import com.lauren.lucided.repository.EducatorRepository;
 import com.lauren.lucided.repository.ParentRepository;
 import com.lauren.lucided.repository.StudentRepository;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -33,10 +35,11 @@ public class AppUserDetailsService implements UserDetailsService {
     }
 
     private UserDetails buildUserDetails(AppUser user) {
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-        );
+        return new AppUserDetails(user);
     }
+
+
+
+
+
 }

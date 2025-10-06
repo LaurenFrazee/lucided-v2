@@ -12,15 +12,18 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final AppUserDetailsService userDetailsService;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil, AppUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -31,7 +34,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         if (path.startsWith("/api/auth")) {
-            // Skip JWT validation for public auth endpoints
             filterChain.doFilter(request, response);
             return;
         }
@@ -43,23 +45,23 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtUtil.isTokenValid(token)) {
                 String username = jwtUtil.extractUsername(token);
-                String role = jwtUtil.extractRole(token);
 
+                // ✅ Load full user details
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                // ✅ Use authorities from UserDetails
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                username,
+                                userDetails,
                                 null,
-                                List.of(() -> "ROLE_" + role)
+                                userDetails.getAuthorities()
                         );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("Request URI1: " + request.getRequestURI());
             }
         }
-        System.out.println("Request URI2: " + request.getRequestURI());
+
         filterChain.doFilter(request, response);
     }
-
-
 }
